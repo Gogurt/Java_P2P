@@ -1,0 +1,42 @@
+package Server;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+
+	public static int serverPort = 555;
+	
+	
+	public static void main(String[] args) {
+		System.out.println("Starting P2P Directory Server...");
+		
+		ServerSocket serverSocket;
+		Socket peerSocket;
+		
+		try {
+			serverSocket = new ServerSocket(serverPort);
+			System.out.println("Successfully created server socket on port " + serverPort);
+			while(true) {
+			    	System.out.println("Listening for connecting peers...");
+			        peerSocket = serverSocket.accept();
+			        System.out.println("Heard response from " + peerSocket.getRemoteSocketAddress().toString());
+			        Thread clientThread = new PeerSocketThread(peerSocket);
+			        clientThread.start();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+}
+
+class PeerSocketThread extends Thread {
+	public PeerSocketThread(Socket clientSocket) throws Exception {
+		System.out.println("Threaded a new connected client...");
+		
+	}
+}
