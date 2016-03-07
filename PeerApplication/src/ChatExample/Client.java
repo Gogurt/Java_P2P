@@ -2,8 +2,10 @@ package ChatExample;
 
 import java.io.*;
 import java.net.*;
+
 //We no longer need a scanner to get input!
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
  
@@ -11,9 +13,14 @@ public class Client extends JFrame
 {
     JTextField inputField = new JTextField();
     JTextArea chatBox = new JTextArea();
-     
+    
     PrintWriter output;
     BufferedReader input;
+    
+    String username = "";
+    
+    //Net related
+    Socket socket;
      
     public static void main(String[] args)
     {
@@ -25,7 +32,7 @@ public class Client extends JFrame
         //Create a panel with the UI for getting input from user
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        p.add(new JLabel("Type here:"), BorderLayout.WEST);
+        p.add(new JLabel("Chat:"), BorderLayout.WEST);
         p.add(inputField, BorderLayout.CENTER);
          
         setLayout(new BorderLayout());
@@ -38,16 +45,24 @@ public class Client extends JFrame
         inputField.addActionListener(new TextFieldListener());
          
         //Housekeeping stuff
-        setTitle("Chat Client");
+        setTitle("P2P Application");
         setSize(550,550);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
-         
+        
+        username = "anonymous user";
+        
+    	String choice = JOptionPane.showInputDialog("Username: ");
+        if(choice.length() != 0)
+        {
+        	username = choice;
+        }
+        
         try {
-            Socket socket = new Socket("localhost",5000);
+            socket = new Socket("localhost",5000);
             output = new PrintWriter(socket.getOutputStream(), true);
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             
+            output.println(username + " has connected!");
             //This will wait for the server to send the string to the client saying a connection
             //has been made.
             String inputString = input.readLine();
@@ -64,12 +79,12 @@ public class Client extends JFrame
         public void actionPerformed(ActionEvent e) {
             try {
                 String userInput = inputField.getText();
-                output.println(userInput);
-                chatBox.append(userInput+"\n");
+                output.println(username + ": " + userInput);
+                chatBox.append("You: " + userInput+"\n");
                 inputField.setText("");
             } catch (Exception ex) {
                 System.out.println(ex);
             }
-        }
+    	}
     }
 }
