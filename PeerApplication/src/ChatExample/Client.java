@@ -32,11 +32,16 @@ public class Client extends JFrame
         //Create a panel with the UI for getting input from user
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        p.add(new JLabel("Chat:"), BorderLayout.WEST);
+        p.add(new JLabel("Search:"), BorderLayout.WEST);
         p.add(inputField, BorderLayout.CENTER);
-         
+        
+        //This is where search query results are appended
+        String[] listOfFiles = {"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"};
+        p.add(new JList(listOfFiles), BorderLayout.SOUTH);
+        
         setLayout(new BorderLayout());
         //Add the chatBox and the panel for getting user input
+        chatBox.setEditable(false);
         add(new JScrollPane(chatBox), BorderLayout.CENTER);
         add(p, BorderLayout.SOUTH);
          
@@ -46,7 +51,7 @@ public class Client extends JFrame
          
         //Housekeeping stuff
         setTitle("P2P Application");
-        setSize(550,550);
+        setSize(550,300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
         
@@ -69,6 +74,7 @@ public class Client extends JFrame
             chatBox.append(inputString+"\n");
         } catch (IOException exception) {
             System.out.println("Error: " + exception);
+            chatBox.append("Failed to connect to server.");
         }
     }
      
