@@ -1,0 +1,1 @@
+As soon as the peer application is connected to the server, the contents of this folder and it's directories are automatically added to the servers list of available peer downloads. As soon as this is added to the database, other peers should be able to send a query to the server to not find those appended file directories.

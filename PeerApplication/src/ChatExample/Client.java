@@ -21,6 +21,8 @@ public class Client extends JFrame
     
     //Net related
     Socket socket;
+    
+    List availableFiles;
      
     public static void main(String[] args)
     {
@@ -36,8 +38,8 @@ public class Client extends JFrame
         p.add(inputField, BorderLayout.CENTER);
         
         //This is where search query results are appended
-        String[] listOfFiles = {"Item 1", "Item 2", "Item 3", "Item 4", "Item 5"};
-        p.add(new JList(listOfFiles), BorderLayout.SOUTH);
+        String[] resultOfAvailableFiles = {"Query search outputs here..."};
+        p.add(new JList(resultOfAvailableFiles), BorderLayout.SOUTH);
         
         setLayout(new BorderLayout());
         //Add the chatBox and the panel for getting user input
@@ -63,8 +65,26 @@ public class Client extends JFrame
         	username = choice;
         }
         
+        //Locate the users file folder and create a list of strings detailing those files
+        System.out.println("Checking personal file folder directory...");
+        File folder = new File("files");
+        File[] listOfFiles = folder.listFiles();
+        availableFiles = new List();
+        
+            for (int i = 0; i < listOfFiles.length; i++) {
+              if (listOfFiles[i].isFile()) {
+                System.out.println(listOfFiles[i].getName());
+                availableFiles.add(listOfFiles[i].getName().toString());
+              } else if (listOfFiles[i].isDirectory()) {
+                System.out.println("Directory " + listOfFiles[i].getName());
+                System.out.println("Alert: Only files will be implemented right now, folders will not be included");
+              }
+            }
+            
+            System.out.println(availableFiles.getItemCount() + " file[s] will be synced...");
+            
         try {
-            socket = new Socket("localhost",5000);
+            socket = new Socket("localhost", 5000);
             output = new PrintWriter(socket.getOutputStream(), true);
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             output.println(username + " has connected!");
