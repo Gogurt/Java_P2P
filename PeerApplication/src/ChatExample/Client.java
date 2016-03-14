@@ -87,7 +87,14 @@ public class Client extends JFrame
             socket = new Socket("localhost", 5000);
             output = new PrintWriter(socket.getOutputStream(), true);
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            
+            
             output.println(username + " has connected!");
+            for(int i = 0; i < availableFiles.getItemCount(); i++) {
+            	output.println(availableFiles.getItem(i));
+            }
+            output.println("FILESEND");
+            
             //This will wait for the server to send the string to the client saying a connection
             //has been made.
             String inputString = input.readLine();
