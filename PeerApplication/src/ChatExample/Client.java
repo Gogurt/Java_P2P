@@ -11,17 +11,16 @@ import java.awt.event.*;
  
 public class Client extends JFrame
 {
+	//UI Related
     JTextField inputField = new JTextField();
     JTextArea chatBox = new JTextArea();
     
     PrintWriter output;
     BufferedReader input;
     
-    String username = "";
-    
     //Net related
     Socket socket;
-    
+    String username = "";
     List availableFiles;
      
     public static void main(String[] args)
@@ -57,12 +56,14 @@ public class Client extends JFrame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
         
-        username = "anonymous user";
-        
     	String choice = JOptionPane.showInputDialog("Username: ");
         if(choice.length() != 0)
         {
         	username = choice;
+        }
+        else
+        {
+        	username = "anonymous user";
         }
         
         //Locate the users file folder and create a list of strings detailing those files
@@ -90,10 +91,11 @@ public class Client extends JFrame
             
             
             output.println(username + " has connected!");
+            //Sending number indicating how many files first
+            output.println(availableFiles.getItemCount());
             for(int i = 0; i < availableFiles.getItemCount(); i++) {
             	output.println(availableFiles.getItem(i));
             }
-            output.println("FILESEND");
             
             //This will wait for the server to send the string to the client saying a connection
             //has been made.

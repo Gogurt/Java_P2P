@@ -7,15 +7,30 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
  
+/* P2P Peer Directory Server
+ * 3/13/15
+ * A modified chat client repurposed to host a pool of
+ * file directories from connecting peers. When a peer wishes
+ * to download a file, they click on one of the available files
+ * in the search query, which the server then contacts the owner
+ * of the file to set up a direct connection with the requesting peer.
+ */
 public class Server extends JFrame
 {
+	//UI Related variables
     //A JTextArea to hold the information received from clients
     JTextArea chatBox = new JTextArea();
     
+    //Network related variables
     int numberOfUsers = 0;
     private ArrayList<ClientThread> clientList;
-    
-    
+    /*
+     * Dedicated to paying attention to global list of available files.
+     * A different instance of connected peers was created because threads
+     * make it difficult to organize objects. That's why the Peer constructor was
+     * also created.
+     */
+    private ArrayList<Peer> peerList;
     
     public static void main(String[] args)
     {
@@ -24,13 +39,13 @@ public class Server extends JFrame
     
     public Server()
     {
+    	//UI Related
         //We need to set up a layout for our window
         setLayout(new BorderLayout());
         //Only display text, do not allow editing
         chatBox.setEditable(false);
         //Add our chatbox in the center with scrolling abilities
         add(new JScrollPane(chatBox), BorderLayout.CENTER);
-         
         setTitle("Chat Server");
         setSize(550,400);
         //If the user closes then exit out
@@ -38,26 +53,22 @@ public class Server extends JFrame
         //Show the frame
         setVisible(true);
         
+        //Network Related
         clientList = new ArrayList<ClientThread>();
-        //We need a try-catch because lots of errors can be thrown
-        try {
+        
+        try 
+        {
             ServerSocket sSocket = new ServerSocket(5000);
             chatBox.append("Server started at: " + new Date() + "\n");
-            
-            //Loop that runs server functions
-            while(true) {
-                //Wait for a client to connect
+            while(true)
+            {
                 Socket socket = sSocket.accept();
                 
-                
-                
-                //Create a new custom thread to handle the connection
+                //New thread is created per new peer connection
                 ClientThread cT = new ClientThread(socket);
-                
                 //Adds the connected client to the list of know connected clients
                 clientList.add(cT);
                 numberOfUsers++;
-                
                 //Start the thread!
                 new Thread(cT).start();
                  
@@ -69,28 +80,29 @@ public class Server extends JFrame
                 	chatBox.append(clientList.get(i).threadSocket.getRemoteSocketAddress().toString() + "\n");
                 }
                 */
-                
             }
-        } catch(IOException exception) {
+        }
+        catch(IOException exception)
+        {
             System.out.println("Error: " + exception);
         }
     }
      
-    //Here we create the ClientThread inner class and have it implement Runnable
-    //This means that it can be used as a thread
+    //Connected Peer Thread
     class ClientThread implements Runnable
     {
         Socket threadSocket;
         String username;
         
+        //May be used over printStream because of
+        //multiple data types
         ObjectOutputStream objectOutput;
         
-        List availableFiles;
+        ArrayList<String> availableFiles;
          
-        //This constructor will be passed the socket
+        //Defined thread constructor
         public ClientThread(Socket socket)
         {
-            //Here we set the socket to a local variable so we can use it later
             threadSocket = socket;
         }
          
@@ -103,8 +115,6 @@ public class Server extends JFrame
                 PrintWriter output = new PrintWriter(threadSocket.getOutputStream(), true);
                 BufferedReader input = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
                 
-                //Tell the client that he/she has connected
-                //Can't send more than one out.println for some reason
                 output.println("Welcome to the chat! There are " + numberOfUsers + " users online.");
                 //output.println("Connected at " + new Date() + " Welcome to the chat! There are " + numberOfUsers + " users online.");
                
@@ -113,30 +123,41 @@ public class Server extends JFrame
                 objectOutput = new ObjectOutputStream(threadSocket.getOutputStream());
  
                 
-        
+                String chatInput = input.readLine();
+                //Add the chat to the text box
+                chatBox.append(chatInput+"\n");
+                System.out.println(chatInput);
+            	
+                chatBox.append("Adding their file directories to available downloads...\n");
+                System.out.println("Adding their file directories to available downloads...\n");
                 
-                while (true) {
-                    String chatInput = input.readLine();
-                    //Add the chat to the text box
-                    chatBox.append(chatInput+"\n");
-                    System.out.println(chatInput);
-                	
-                    chatBox.append("Adding their file directories to available downloads...\n");
-                    System.out.println("Adding their file directories to available downloads...\n");
-                    
-                    //Appending all files sent from client until FILEEND
-                	while(true) {
-                		String readInput = input.readLine();
-                		if(readInput == "FILESEND") {
-                			break;
-                		} else {
-                    		chatBox.append("New file dir added: " + readInput + "\n");
-                    		System.out.println(readInput);
-                		}
-                		//Add file names to list here
-
-                	}
-                	System.out.println(availableFiles.toString());
+                //Appending all files sent from client until empty string is sent
+                int amountOfFiles = 0;
+                amountOfFiles = Integer.parseInt(input.readLine());
+                
+            	for(int i = 0; i < amountOfFiles; i++) {
+            		String readInput = input.readLine();
+                		chatBox.append("New file dir added: " + readInput + "\n");
+                		System.out.println(readInput);
+                		//availableFiles.add(readInput.toString());
+            	}
+            	
+            	//Add new peer to list of available peers with files
+            	//if(!availableFiles.isEmpty()) {
+            		//Peer newPeer = new Peer(threadSocket.getRemoteSocketAddress().toString(), threadSocket.getPort(), availableFiles);
+        			//peerList.add(newPeer);
+            	//}
+        		
+            	System.out.println(availableFiles.toString());
+            	System.out.println("File sync finished. Ready to recieve query data");
+            	chatBox.append("File sync finished. Ready to recieve query data\n");
+            	output.println("File sync finished. Ready to recieve query data");
+            	
+            	//while(true) {
+            		//String queryInput = input.readLine();
+            		
+            		
+            	//}
                 
                     
                     
@@ -148,9 +169,9 @@ public class Server extends JFrame
                     	output.println(chatInput);
                     }
                     */
-                    sendToAll(chatInput);
+                    //sendToAll(chatInput);
                     
-                }
+                
             } catch(IOException exception) {
                 System.out.println("Error: " + exception);
                 //Remove this connected socket
@@ -178,9 +199,9 @@ public class Server extends JFrame
     	
     	private String ip;
 		private int port;
-		private List availableFiles;
+		private ArrayList<String> availableFiles;
 
-		public Peer(String ip, int port, List availableFiles) {
+		public Peer(String ip, int port, ArrayList<String> availableFiles) {
     		this.ip = ip;
     		this.port = port;
     		this.availableFiles = availableFiles;
