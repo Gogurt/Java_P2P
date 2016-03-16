@@ -49,6 +49,9 @@ public class Client extends JFrame
         //Add an action listener on the text field 
         //so we can get what the user is typing
         inputField.addActionListener(new TextFieldListener());
+        
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
          
         //Housekeeping stuff
         setTitle("P2P Application");
@@ -90,17 +93,18 @@ public class Client extends JFrame
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
             
-            output.println(username + " has connected!");
+            output.println(username);
             //Sending number indicating how many files first
             output.println(availableFiles.getItemCount());
             for(int i = 0; i < availableFiles.getItemCount(); i++) {
             	output.println(availableFiles.getItem(i));
             }
             
-            //This will wait for the server to send the string to the client saying a connection
-            //has been made.
-            String inputString = input.readLine();
-            chatBox.append(inputString+"\n");
+            
+            while(true) {
+            	String inputString = input.readLine();
+            	chatBox.append(inputString+"\n");
+            }
         } catch (IOException exception) {
             System.out.println("Error: " + exception);
             chatBox.append("Failed to connect to server.");
@@ -114,9 +118,11 @@ public class Client extends JFrame
         public void actionPerformed(ActionEvent e) {
             try {
                 String userInput = inputField.getText();
-                output.println(username + ": " + userInput);
-                chatBox.append("You: " + userInput+"\n");
+                output.println(userInput);
+                chatBox.append("Looking for " + userInput+"\n");
                 inputField.setText("");
+                //Search query results append here I think?
+                
             } catch (Exception ex) {
                 System.out.println(ex);
             }

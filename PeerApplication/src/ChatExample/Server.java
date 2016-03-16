@@ -46,11 +46,13 @@ public class Server extends JFrame
         chatBox.setEditable(false);
         //Add our chatbox in the center with scrolling abilities
         add(new JScrollPane(chatBox), BorderLayout.CENTER);
+           
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2); 
+        
         setTitle("Chat Server");
         setSize(550,400);
-        //If the user closes then exit out
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //Show the frame
         setVisible(true);
         
         //Network Related
@@ -123,10 +125,11 @@ public class Server extends JFrame
                 objectOutput = new ObjectOutputStream(threadSocket.getOutputStream());
  
                 
-                String chatInput = input.readLine();
+                String usernameInput = input.readLine();
+                username = usernameInput;
                 //Add the chat to the text box
-                chatBox.append(chatInput+"\n");
-                System.out.println(chatInput);
+                chatBox.append(username + " has connected!\n");
+                System.out.println(username + " has connected!");
             	
                 chatBox.append("Adding their file directories to available downloads...\n");
                 System.out.println("Adding their file directories to available downloads...\n");
@@ -134,6 +137,8 @@ public class Server extends JFrame
                 //Appending all files sent from client until empty string is sent
                 int amountOfFiles = 0;
                 amountOfFiles = Integer.parseInt(input.readLine());
+                chatBox.append(username + " is adding " + amountOfFiles + " directories...\n");
+                System.out.println(username + " is adding " + amountOfFiles + " directories...");
                 
             	for(int i = 0; i < amountOfFiles; i++) {
             		String readInput = input.readLine();
@@ -148,16 +153,17 @@ public class Server extends JFrame
         			//peerList.add(newPeer);
             	//}
         		
-            	System.out.println(availableFiles.toString());
+            	
             	System.out.println("File sync finished. Ready to recieve query data");
             	chatBox.append("File sync finished. Ready to recieve query data\n");
             	output.println("File sync finished. Ready to recieve query data");
             	
-            	//while(true) {
-            		//String queryInput = input.readLine();
+            	while(true) {
+            		String queryInput = input.readLine();
+            		chatBox.append(username + " searching for " + queryInput + "\n");
+            		System.out.println(username + " searching for " + queryInput);
             		
-            		
-            	//}
+            	}
                 
                     
                     
