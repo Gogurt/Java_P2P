@@ -123,6 +123,7 @@ public class Client extends JFrame
         //This method will be called when the user hits enter
         public void actionPerformed(ActionEvent e) {
             try {
+                output.println("Request_Search");
                 String userInput = inputField.getText();
                 output.println(userInput);
                 chatBox.append("Looking for " + userInput + "\n");
@@ -153,13 +154,38 @@ public class Client extends JFrame
                         p.add(resultsList, BorderLayout.SOUTH);
                         p.revalidate();
                         p.repaint();
+                        
+
+                        resultsList.addMouseListener(new MouseAdapter() {
+                            public void mouseClicked(MouseEvent evt) {
+                                JList<String> list = (JList)evt.getSource();
+                                if (evt.getClickCount() == 2) {
+
+                                    // Double-click detected
+                                    int index = list.locationToIndex(evt.getPoint());
+                                    String selectedItem = resultsList.getSelectedValue().toString();
+                                    System.out.println("Double click detected on element " + selectedItem);
+                                    
+                                    //Sending download request query
+                                    chatBox.append("Attempting to download " + selectedItem + "\n");
+                                    System.out.println("Attempting to download " + selectedItem);
+                                    //Primes the server to let it know the next output is a download query
+                                    output.println("Request_Download");
+                                    output.println(selectedItem);
+                                    
+                                    
+                                }
+                            }
+                        });
+                        
                     }
                     inputField.setText("");
-                    
      
             } catch (Exception ex) {
                 System.out.println(ex);
             }
     	}
     }
+   
+
 }

@@ -162,30 +162,47 @@ public class Server extends JFrame
             	
             	while(true) {
             		String queryInput = input.readLine();
-            		chatBox.append(username + " searching for " + queryInput + "\n");
-            		System.out.println(username + " searching for " + queryInput);
-            		
-            		for(int i = 0; i < peerList.size(); i++)
-                    {
-            			chatBox.append("Checking " + peerList.get(i).username + " \n");
-                    	for(int j = 0; j < peerList.get(i).availableFiles.size(); j++)
-                    	{
-                    		if(queryInput.equals(peerList.get(i).availableFiles.get(j)))
-                    		{
-                    			//Send result back to threaded peer requesting it
-                    			output.println(peerList.get(i).availableFiles.get(j));
-                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is the requested file! Sending results...\n");
-                    		}
-                    		else
-                    		{
-                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is not the requested file.\n");
-                        		if(i == peerList.size() - 1 && j == peerList.get(i).availableFiles.size() - 1)
-                        		{
-                        			output.println("nothing");
-                        		}
-                    		}
-                    	}
-                    }            		
+            		if(queryInput.equals("Request_Search"))
+            		{
+            			String searchInput = input.readLine();
+	            		chatBox.append(username + " searching for " + searchInput + "\n");
+	            		System.out.println(username + " searching for " + searchInput);
+	            		
+	            		for(int i = 0; i < peerList.size(); i++)
+	                    {
+	            			chatBox.append("Checking " + peerList.get(i).username + " \n");
+	                    	for(int j = 0; j < peerList.get(i).availableFiles.size(); j++)
+	                    	{
+	                    		if(searchInput.equals(peerList.get(i).availableFiles.get(j)))
+	                    		{
+	                    			//Send result back to threaded peer requesting it
+	                    			output.println(peerList.get(i).availableFiles.get(j));
+	                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is the requested file! Sending results...\n");
+	                    		}
+	                    		else
+	                    		{
+	                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is not the requested file.\n");
+	                        		if(i == peerList.size() - 1 && j == peerList.get(i).availableFiles.size() - 1)
+	                        		{
+	                        			output.println("nothing");
+	                        		}
+	                    		}
+	                    	}
+	                    }
+            		}
+            		else if(queryInput.equals("Request_Download"))
+            		{
+            			String selectedItem = input.readLine();
+            			chatBox.append(username + " has requested to download " + selectedItem + "\n");
+            			//Connection to owner of file takes place here
+            			
+            			
+            		}
+            		else
+            		{
+            			System.out.println("Error: Could not resolve client request");
+            			chatBox.append("Error: Could not resolve client request\n");
+            		}
             	}
             	
                 
@@ -215,12 +232,6 @@ public class Server extends JFrame
             	objectOutput.writeObject(obj);
             }
             catch(IOException e){ e.printStackTrace(); }
-        }
-        
-        //Supposed to send the Object message to all client sockets in clientList
-        public void sendToAll(Object message){
-            for(ClientThread client : clientList)
-                client.write(message);
         }
         
         public void printPeerItems()
