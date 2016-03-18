@@ -15,6 +15,7 @@ public class Client extends JFrame
     JTextField inputField = new JTextField();
     JTextArea chatBox = new JTextArea();
     JPanel p;
+    JList<String> resultsList;
     
     PrintWriter output;
     BufferedReader input;
@@ -39,7 +40,9 @@ public class Client extends JFrame
         
         //This is where search query results are appended
         String[] resultOfAvailableFiles = {"Query search outputs here..."};
-        p.add(new JList(resultOfAvailableFiles), BorderLayout.SOUTH);
+        resultsList = new JList<String>(resultOfAvailableFiles);
+        resultsList.setEnabled(false);
+        p.add(resultsList, BorderLayout.SOUTH);
         
         setLayout(new BorderLayout());
         //Add the chatBox and the panel for getting user input
@@ -102,12 +105,11 @@ public class Client extends JFrame
             }
             output.flush();
             
+            String inputMeta = input.readLine();
+        	chatBox.append(inputMeta+"\n");
+        	String inputWelcome = input.readLine();
+        	chatBox.append(inputWelcome+"\n");
             
-            while(true) {
-            	String inputString = input.readLine();
-            	chatBox.append(inputString+"\n");
-            	
-            }
             
         } catch (IOException exception) {
             System.out.println("Error: " + exception);
@@ -127,23 +129,34 @@ public class Client extends JFrame
                 System.out.println("Looking for " + userInput);
                 inputField.setText("");
                 //Search query results append here
-                try {
-                	input.wait(10000);
                     String result = input.readLine();
-                    chatBox.append("Found " + result + "\n");
-                    System.out.println("Found " + result);
+                    if(result.equals("nothing"))
+                    {
+                        chatBox.append("Couldn't find " + userInput + "\n");
+                        System.out.println("Couldn't find " + userInput);
+                        String[] resultOfAvailableFiles = {"Query search outputs here..."};
+                        p.remove(resultsList);
+                        resultsList = new JList<String>(resultOfAvailableFiles);
+                        resultsList.setEnabled(false);
+                        p.add(resultsList, BorderLayout.SOUTH);
+                        p.revalidate();
+                        p.repaint();
+                    }
+                    else
+                    {
+                        chatBox.append("Found " + result + "\n");
+                        System.out.println("Found " + result);
+                        
+                        String[] resultOfAvailableFiles = {result};
+                        p.remove(resultsList);
+                        resultsList = new JList<String>(resultOfAvailableFiles);
+                        p.add(resultsList, BorderLayout.SOUTH);
+                        p.revalidate();
+                        p.repaint();
+                    }
+                    inputField.setText("");
                     
-                    String[] resultOfAvailableFiles = {result};
-                    p.add(new JList(resultOfAvailableFiles), BorderLayout.SOUTH);
-                }
-                catch(Exception exception)
-                {
-                    chatBox.append("Couldn't find " + userInput + "\n");
-                    System.out.println("Couldn't find " + userInput);
-                }
-
-                
-                
+     
             } catch (Exception ex) {
                 System.out.println(ex);
             }
