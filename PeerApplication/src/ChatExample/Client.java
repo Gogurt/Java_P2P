@@ -14,6 +14,7 @@ public class Client extends JFrame
 	//UI Related
     JTextField inputField = new JTextField();
     JTextArea chatBox = new JTextArea();
+    JPanel p;
     
     PrintWriter output;
     BufferedReader input;
@@ -31,7 +32,7 @@ public class Client extends JFrame
     public Client()
     {
         //Create a panel with the UI for getting input from user
-        JPanel p = new JPanel();
+        p = new JPanel();
         p.setLayout(new BorderLayout());
         p.add(new JLabel("Search:"), BorderLayout.WEST);
         p.add(inputField, BorderLayout.CENTER);
@@ -99,12 +100,15 @@ public class Client extends JFrame
             for(int i = 0; i < availableFiles.getItemCount(); i++) {
             	output.println(availableFiles.getItem(i));
             }
+            output.flush();
             
             
             while(true) {
             	String inputString = input.readLine();
             	chatBox.append(inputString+"\n");
+            	
             }
+            
         } catch (IOException exception) {
             System.out.println("Error: " + exception);
             chatBox.append("Failed to connect to server.");
@@ -119,9 +123,26 @@ public class Client extends JFrame
             try {
                 String userInput = inputField.getText();
                 output.println(userInput);
-                chatBox.append("Looking for " + userInput+"\n");
+                chatBox.append("Looking for " + userInput + "\n");
+                System.out.println("Looking for " + userInput);
                 inputField.setText("");
-                //Search query results append here I think?
+                //Search query results append here
+                try {
+                	input.wait(10000);
+                    String result = input.readLine();
+                    chatBox.append("Found " + result + "\n");
+                    System.out.println("Found " + result);
+                    
+                    String[] resultOfAvailableFiles = {result};
+                    p.add(new JList(resultOfAvailableFiles), BorderLayout.SOUTH);
+                }
+                catch(Exception exception)
+                {
+                    chatBox.append("Couldn't find " + userInput + "\n");
+                    System.out.println("Couldn't find " + userInput);
+                }
+
+                
                 
             } catch (Exception ex) {
                 System.out.println(ex);

@@ -50,13 +50,14 @@ public class Server extends JFrame
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2); 
         
-        setTitle("Chat Server");
+        setTitle("Peer Directory Server");
         setSize(550,400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
         
         //Network Related
         clientList = new ArrayList<ClientThread>();
+        peerList = new ArrayList<Peer>();
         
         try 
         {
@@ -101,6 +102,7 @@ public class Server extends JFrame
         ObjectOutputStream objectOutput;
         
         ArrayList<String> availableFiles;
+        Peer newPeer;
          
         //Defined thread constructor
         public ClientThread(Socket socket)
@@ -117,16 +119,17 @@ public class Server extends JFrame
                 PrintWriter output = new PrintWriter(threadSocket.getOutputStream(), true);
                 BufferedReader input = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
                 
-                output.println("Welcome to the chat! There are " + numberOfUsers + " users online.");
-                //output.println("Connected at " + new Date() + " Welcome to the chat! There are " + numberOfUsers + " users online.");
-               
+                output.println("Connected at " + new Date() + " Welcome to the server! There are " + numberOfUsers + " peers online.");
+                
                 
                 //May allow other types besides strings over PrintWriter. haven't tested it yet.
                 objectOutput = new ObjectOutputStream(threadSocket.getOutputStream());
- 
+                
                 
                 String usernameInput = input.readLine();
                 username = usernameInput;
+                availableFiles = new ArrayList<String>();
+                
                 //Add the chat to the text box
                 chatBox.append(username + " has connected!\n");
                 System.out.println(username + " has connected!");
@@ -144,42 +147,55 @@ public class Server extends JFrame
             		String readInput = input.readLine();
                 		chatBox.append("New file dir added: " + readInput + "\n");
                 		System.out.println(readInput);
-                		//availableFiles.add(readInput.toString());
+                		availableFiles.add(readInput.toString());
             	}
             	
-            	//Add new peer to list of available peers with files
-            	//if(!availableFiles.isEmpty()) {
-            		//Peer newPeer = new Peer(threadSocket.getRemoteSocketAddress().toString(), threadSocket.getPort(), availableFiles);
-        			//peerList.add(newPeer);
-            	//}
-        		
+            	newPeer = new Peer(username, threadSocket.getRemoteSocketAddress().toString(), threadSocket.getPort(), availableFiles);
+            	peerList.add(newPeer);
+            	output.flush();
+            	
             	
             	System.out.println("File sync finished. Ready to recieve query data");
             	chatBox.append("File sync finished. Ready to recieve query data\n");
             	output.println("File sync finished. Ready to recieve query data");
+            	
+            	printPeerItems();
             	
             	while(true) {
             		String queryInput = input.readLine();
             		chatBox.append(username + " searching for " + queryInput + "\n");
             		System.out.println(username + " searching for " + queryInput);
             		
-            	}
-                
-                    
-                    
-                    //Send to all connected peers
-                    /*
-                    for(int i = 0; i < clientList.size(); i++)
+            		for(int i = 0; i < peerList.size(); i++)
                     {
-                    	output = new PrintWriter(clientList.get(i).threadSocket.getOutputStream(), true);
-                    	output.println(chatInput);
-                    }
-                    */
-                    //sendToAll(chatInput);
-                    
+                    	for(int j = 0; j < peerList.get(i).availableFiles.size(); j++)
+                    	{
+                    		if(queryInput == peerList.get(i).availableFiles.get(j))
+                    		{
+                    			//Send result back to threaded peer requesting it
+                    			output.flush();
+                    			output.println(peerList.get(i).availableFiles.get(j));
+                    		}
+                    	}
+                    }            		
+            	}
+            	
                 
             } catch(IOException exception) {
                 System.out.println("Error: " + exception);
+                //Remove file directories from server
+                for(int i = 0; i < peerList.size(); i++)
+                {
+                	if(peerList.get(i).username == username)
+                	{
+                		chatBox.append(username + " has disconnected. Their files will be no longer available!\n");
+                		System.out.println(username + " has disconnected. Their files will be no longer available!\n");
+                		peerList.remove(i);
+                		printPeerItems();
+                		break;
+                	}
+                }
+                
                 //Remove this connected socket
                 clientList.remove(this);
                 numberOfUsers--;
@@ -199,15 +215,30 @@ public class Server extends JFrame
                 client.write(message);
         }
         
+        public void printPeerItems()
+        {
+        	chatBox.append("List of available files:\n");
+            for(int i = 0; i < peerList.size(); i++)
+            {
+            	chatBox.append("\tFiles from " + peerList.get(i).username + ":\n");
+            	for(int j = 0; j < peerList.get(i).availableFiles.size(); j++)
+            	{
+            		chatBox.append("\t\t" + peerList.get(i).availableFiles.get(j) + "\n");
+            	}
+            }
+        }
+        
     }
     
     public class Peer {
     	
+    	private String username;
     	private String ip;
 		private int port;
 		private ArrayList<String> availableFiles;
 
-		public Peer(String ip, int port, ArrayList<String> availableFiles) {
+		public Peer(String username, String ip, int port, ArrayList<String> availableFiles) {
+			this.username = username;
     		this.ip = ip;
     		this.port = port;
     		this.availableFiles = availableFiles;
