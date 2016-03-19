@@ -20,11 +20,14 @@ public class Client extends JFrame
     PrintWriter output;
     BufferedReader input;
     
-    //Net related
+    //Net Related
     Socket socket;
     String username = "";
     List availableFiles;
-     
+    
+    //Foreign Peer Related
+    Socket foreignPeerSocket;
+    
     public static void main(String[] args)
     {
         new Client();
@@ -173,6 +176,36 @@ public class Client extends JFrame
                                     output.println("Request_Download");
                                     output.println(selectedItem);
                                     
+                                    /*
+                                     * If the result is FOUND_PEER, carry on with downloading process
+                                     */
+                                    try {
+										String result = input.readLine().toString();
+										if(result.equals("PEER_FOUND"))
+										{
+											chatBox.append("Found peer with requested file! beginning connection process...\n");
+		                                    System.out.println("Found peer with requested file! beginning connection process...");
+		                                    //Grab ip information about other peer
+		                                    String foreignIP = input.readLine().toString();
+		                                    String foreignUsername = input.readLine().toString();
+		                                    
+		                                    chatBox.append("Your requested file is from " + foreignUsername + " at " + foreignIP + "\n");
+		                                    System.out.println("Your requested file is from " + foreignUsername + " at " + foreignIP);
+		                                    //Establish a connection with the foreign peer
+		                                    
+		                                    
+		                                    
+		                                    
+										}
+										else
+										{
+											chatBox.append(result.toString() + "\n");
+		                                    System.out.println("Error: Could not find peer with requested file!");
+										}
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
                                     
                                 }
                             }

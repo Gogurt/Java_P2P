@@ -177,11 +177,11 @@ public class Server extends JFrame
 	                    		{
 	                    			//Send result back to threaded peer requesting it
 	                    			output.println(peerList.get(i).availableFiles.get(j));
-	                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is the requested file! Sending results...\n");
+	                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " has been found! Sending results...\n");
 	                    		}
 	                    		else
 	                    		{
-	                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is not the requested file.\n");
+	                    			//chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is not the requested file.\n");
 	                        		if(i == peerList.size() - 1 && j == peerList.get(i).availableFiles.size() - 1)
 	                        		{
 	                        			output.println("nothing");
@@ -195,8 +195,31 @@ public class Server extends JFrame
             			String selectedItem = input.readLine();
             			chatBox.append(username + " has requested to download " + selectedItem + "\n");
             			//Connection to owner of file takes place here
-            			
-            			
+            			for(int i = 0; i < peerList.size(); i++)
+	                    {
+	                    	for(int j = 0; j < peerList.get(i).availableFiles.size(); j++)
+	                    	{
+	                    		if(selectedItem.equals(peerList.get(i).availableFiles.get(j)))
+	                    		{
+	                    			//Send foreign peer information back to requesting peer
+	                    			chatBox.append("Sending requested peer info back to " + username + "\n");
+	                    			output.println("PEER_FOUND");
+	                    			output.println(peerList.get(i).ip);
+	                    			output.println(peerList.get(i).username);
+	                    			//Inform the foreign peer that the requesting peer wishes to download their file
+	                    			
+	                    			
+	                    		}
+	                    		else
+	                    		{
+	                    			chatBox.append("File " + peerList.get(i).availableFiles.get(j) + " is not the requested file.\n");
+	                        		if(i == peerList.size() - 1 && j == peerList.get(i).availableFiles.size() - 1)
+	                        		{
+	                        			output.println("Unable to find the requested file! The owner may have disconnected.");
+	                        		}
+	                    		}
+	                    	}
+	                    }			
             		}
             		else
             		{
