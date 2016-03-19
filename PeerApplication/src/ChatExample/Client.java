@@ -15,7 +15,12 @@ public class Client extends JFrame
     JTextField inputField = new JTextField();
     JTextArea chatBox = new JTextArea();
     JPanel p;
+    JPanel b;
+    JTextField directoryField;
     JList<String> resultsList;
+    JFileChooser directoryChooser;
+    JButton fileButton;
+    String directory;
     
     PrintWriter output;
     BufferedReader input;
@@ -27,7 +32,7 @@ public class Client extends JFrame
     
     //Foreign Peer Related
     Socket foreignPeerSocket;
-    
+
     public static void main(String[] args)
     {
         new Client();
@@ -41,6 +46,41 @@ public class Client extends JFrame
         p.add(new JLabel("Search:"), BorderLayout.WEST);
         p.add(inputField, BorderLayout.CENTER);
         
+        //The panel for creating a username and setting the directory path
+        b = new JPanel(new GridLayout(3, 2, 0, 0));
+        
+        b.add(new JLabel("Username: "));
+        JTextField unField = new JTextField(10);
+        b.add(unField);
+ 
+        directoryField = new JTextField(15);
+        
+        //fileButton uses JFileChooser to open a file window and allow selection of a folder
+        fileButton = new JButton("Choose");
+        fileButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent ae) {
+        		directoryChooser = new JFileChooser();
+        		directoryChooser.setDialogTitle("Choose Directory");
+        		directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        		directoryChooser.setAcceptAllFileFilterUsed(false);
+        		
+        		if(directoryChooser.showOpenDialog(directoryChooser) == JFileChooser.APPROVE_OPTION) {
+        			System.out.println("getCurrentDirectory(): " 
+        			         + directoryChooser.getSelectedFile());
+        			directoryField.setText(directoryChooser.getSelectedFile().toString());
+        		}
+        		else {
+        			System.out.println("No directory selected");
+        		}
+        	}
+        });
+        b.add(new JLabel("Directory: "));
+        b.add(new JLabel());
+        b.add(directoryField);
+        b.add(fileButton);
+        b.setSize(400, 300);
+        b.setPreferredSize(new Dimension(400, b.getPreferredSize().height));
+        
         //This is where search query results are appended
         String[] resultOfAvailableFiles = {"Query search outputs here..."};
         resultsList = new JList<String>(resultOfAvailableFiles);
@@ -52,6 +92,7 @@ public class Client extends JFrame
         chatBox.setEditable(false);
         add(new JScrollPane(chatBox), BorderLayout.CENTER);
         add(p, BorderLayout.SOUTH);
+        
          
         //Add an action listener on the text field 
         //so we can get what the user is typing
@@ -66,19 +107,29 @@ public class Client extends JFrame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
         
-    	String choice = JOptionPane.showInputDialog("Username: ");
-        if(choice.length() != 0)
-        {
-        	username = choice;
-        }
-        else
-        {
-        	username = "anonymous user";
-        }
+        //JOptionPane for users to enter their username and directory or exit
+    	int result = JOptionPane.showConfirmDialog(null, b, "Enter Username and Directory", JOptionPane.OK_CANCEL_OPTION);
+    	
+    	if(result == JOptionPane.OK_OPTION) {
+    		if(unField.getText().length() != 0)
+    		{
+    			username = unField.getText();
+    		}
+    		else
+    		{
+    			username = "anonymous user";
+    		}
+    		
+    		directory = directoryField.getText();
+    	}
+    	else if(result == JOptionPane.CANCEL_OPTION) {
+    		this.dispose();
+    		System.exit(0);
+    	}
         
-        //Locate the users file folder and create a list of strings detailing those files
+        //Locate the users file folder and create a list of strings detailing those files      
         System.out.println("Checking personal file folder directory...");
-        File folder = new File("files");
+        File folder = new File(directory);
         File[] listOfFiles = folder.listFiles();
         availableFiles = new List();
         
@@ -99,8 +150,8 @@ public class Client extends JFrame
             output = new PrintWriter(socket.getOutputStream(), true);
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
-            
             output.println(username);
+            
             //Sending number indicating how many files first
             output.println(availableFiles.getItemCount());
             for(int i = 0; i < availableFiles.getItemCount(); i++) {
@@ -119,7 +170,7 @@ public class Client extends JFrame
             chatBox.append("Failed to connect to server.");
         }
     }
-     
+    
     //This class handles the text field
     class TextFieldListener implements ActionListener
     {
@@ -132,6 +183,7 @@ public class Client extends JFrame
                 chatBox.append("Looking for " + userInput + "\n");
                 System.out.println("Looking for " + userInput);
                 inputField.setText("");
+
                 //Search query results append here
                     String result = input.readLine();
                     if(result.equals("nothing"))
@@ -213,7 +265,7 @@ public class Client extends JFrame
                         
                     }
                     inputField.setText("");
-     
+
             } catch (Exception ex) {
                 System.out.println(ex);
             }
