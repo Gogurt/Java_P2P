@@ -99,11 +99,6 @@ public class Server extends JFrame
         //Sent to foreign peers so they know what port to connect on
         String peerPortListener;
         
-        
-        //May be used over printStream because of
-        //multiple data types
-        ObjectOutputStream objectOutput;
-        
         ArrayList<String> availableFiles;
         Peer newPeer;
          
@@ -121,11 +116,7 @@ public class Server extends JFrame
                 //Create the streams
                 PrintWriter output = new PrintWriter(threadSocket.getOutputStream(), true);
                 BufferedReader input = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
-                
-                
-                
-                //May allow other types besides strings over PrintWriter. haven't tested it yet.
-                objectOutput = new ObjectOutputStream(threadSocket.getOutputStream());
+               
                 
                 
                 String usernameInput = input.readLine();
@@ -261,12 +252,6 @@ public class Server extends JFrame
             }
         }
         
-        public void write(Object obj) {
-            try{
-            	objectOutput.writeObject(obj);
-            }
-            catch(IOException e){ e.printStackTrace(); }
-        }
         
         public void printPeerItems()
         {
