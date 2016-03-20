@@ -31,7 +31,9 @@ public class Client extends JFrame
     List availableFiles;
     
     //Foreign Peer Related
-    Socket foreignPeerSocket;
+    Socket foreignSocket;
+    //Specifically defined and sent to main server so multiple peers can be on one computer.
+    int foreignPortListener = 0;
 
     public static void main(String[] args)
     {
@@ -121,11 +123,39 @@ public class Client extends JFrame
     		}
     		
     		directory = directoryField.getText();
+    		
+    		
+    		
     	}
     	else if(result == JOptionPane.CANCEL_OPTION) {
     		this.dispose();
     		System.exit(0);
     	}
+    	
+    	/*
+    	 * This is where the foreign listening port is being defined before it is sent
+    	 * with the other information to the directory server
+    	 */
+    	ServerSocket sSocket = null;
+        System.out.println("Defining available port for foreign peer listener...");
+		chatBox.append("Defining available port for foreign peer listener...\n");
+		//Checking availability of ports
+		int n = 5001;
+		while(foreignPortListener == 0)
+		{
+			if(available(n))
+			{
+				foreignPortListener = n;
+				System.out.println("Defined listening port on " + foreignPortListener);
+		        chatBox.append("Defined listening port on " + foreignPortListener + "\n");
+			}
+			else
+			{
+				n++;
+			}
+		}
+    	
+    	
         
         //Locate the users file folder and create a list of strings detailing those files      
         System.out.println("Checking personal file folder directory...");
@@ -151,6 +181,7 @@ public class Client extends JFrame
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
             output.println(username);
+            output.println(foreignPortListener);
             
             //Sending number indicating how many files first
             output.println(availableFiles.getItemCount());
@@ -163,12 +194,47 @@ public class Client extends JFrame
         	chatBox.append(inputMeta+"\n");
         	String inputWelcome = input.readLine();
         	chatBox.append(inputWelcome+"\n");
+        	String inputFileSyncStatus = input.readLine();
+        	chatBox.append(inputFileSyncStatus+"\n");
             
             
         } catch (IOException exception) {
             System.out.println("Error: " + exception);
             chatBox.append("Failed to connect to server.");
         }
+        
+        /*
+         * It's only after the Peer has connected and synced its file
+         * contents does it open up for another peer to download from them.
+         * There should be some level of authentication to prevent peers from
+         * constantly downloading from you without permission, but for testing
+         * purposes, this should be just fine.
+         * Similar to the Server class, a socket is used to listen for connecting peers,
+         * which are then thrown into their own Thread class for searching the request and
+         * returning the file to the requesting peer.
+         * For testing on one machine, both peers need to have their own specific port,
+         * A method has been added earlier to allow the choice of a port, which was also sent to the server.
+         * So one peer should be 5001 and another 5002.
+         */
+        try {
+        	//Socket created with previously defined port we know isn't in use
+			sSocket = new ServerSocket(foreignPortListener);
+            while(true)
+            {
+            	System.out.println("Listening for foreign peer requests");
+                chatBox.append("Listening for foreign peer requests\n");
+    			Socket socket = sSocket.accept();
+    			//Pass connection to a new thread to transfer the requested file
+                //The thread method still needs to be made, so nothing will happen right now.
+    			
+    			
+            }
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        
     }
     
     //This class handles the text field
@@ -240,11 +306,28 @@ public class Client extends JFrame
 		                                    //Grab ip information about other peer
 		                                    String foreignIP = input.readLine().toString();
 		                                    String foreignUsername = input.readLine().toString();
+		                                    String foreignPort = input.readLine().toString();
 		                                    
 		                                    chatBox.append("Your requested file is from " + foreignUsername + " at " + foreignIP + "\n");
 		                                    System.out.println("Your requested file is from " + foreignUsername + " at " + foreignIP);
 		                                    //Establish a connection with the foreign peer
-		                                    
+		                                    //5001 for now will be an open socket listening for connecting ips.
+		                                    //Once connected, a thread is used to search and send back the requested file
+		                                    try {
+		                                    	//Ip may be a problem. 'localhost' should also work just fine if this doens't work
+		                                    	foreignSocket = new Socket(foreignIP, foreignPortListener);
+		                                    	PrintWriter foreignOutput = new PrintWriter(foreignSocket.getOutputStream(), true);
+		                                        BufferedReader foreignInput = new BufferedReader(new InputStreamReader(foreignSocket.getInputStream()));
+		                                    	//Begin transfer process once the other peers listening port passes us to our own thread
+		                                        
+		                                        
+		                                        
+		                                    }
+		                                    catch(IOException ioe)
+		                                    {
+		                                    	chatBox.append("Error: Unable to communicate with " + foreignUsername + "\n");
+			                                    System.out.println("Error: Unable to communicate with " + foreignUsername);
+		                                    }
 		                                    
 		                                    
 		                                    
@@ -271,6 +354,36 @@ public class Client extends JFrame
             }
     	}
     }
-   
+ 
+    public static boolean available(int port) {
+        if (port < 5000 || port > 6000) {
+            throw new IllegalArgumentException("Invalid start port: " + port);
+        }
+
+        ServerSocket ss = null;
+        DatagramSocket ds = null;
+        try {
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ds = new DatagramSocket(port);
+            ds.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+        } finally {
+            if (ds != null) {
+                ds.close();
+            }
+
+            if (ss != null) {
+                try {
+                    ss.close();
+                } catch (IOException e) {
+                    /* should not be thrown */
+                }
+            }
+        }
+
+        return false;
+    }
 
 }
