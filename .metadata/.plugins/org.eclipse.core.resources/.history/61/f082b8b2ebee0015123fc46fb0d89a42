@@ -6,6 +6,8 @@ import java.net.*;
 //We no longer need a scanner to get input!
 import javax.swing.*;
 
+import ChatExample.Server.ClientThread;
+
 import java.awt.*;
 import java.awt.event.*;
  
@@ -223,11 +225,17 @@ public class Client extends JFrame
             {
             	System.out.println("Listening for foreign peer requests");
                 chatBox.append("Listening for foreign peer requests\n");
-    			Socket socket = sSocket.accept();
+    			Socket foreignSocket = sSocket.accept();
+    			System.out.println("Foreign peer detected. Creating new thread to handle download...");
+                chatBox.append("Foreign peer detected. Creating new thread to handle download...\n");
     			//Pass connection to a new thread to transfer the requested file
                 //The thread method still needs to be made, so nothing will happen right now.
-    			
-    			
+                System.out.println("Connecting foreign peer on port " + foreignSocket.getPort());
+                if(sSocket.getLocalPort() != foreignPortListener)
+                {
+                	ForeignPeerThread cT = new ForeignPeerThread(foreignSocket, directory, availableFiles);
+    				new Thread(cT).start();
+                }
             }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -306,7 +314,7 @@ public class Client extends JFrame
 		                                    //Grab ip information about other peer
 		                                    String foreignIP = input.readLine().toString();
 		                                    String foreignUsername = input.readLine().toString();
-		                                    String foreignPort = input.readLine().toString();
+		                                    int foreignPort = Integer.parseInt(input.readLine());
 		                                    
 		                                    chatBox.append("Your requested file is from " + foreignUsername + " at " + foreignIP + "\n");
 		                                    System.out.println("Your requested file is from " + foreignUsername + " at " + foreignIP);
@@ -314,11 +322,13 @@ public class Client extends JFrame
 		                                    //5001 for now will be an open socket listening for connecting ips.
 		                                    //Once connected, a thread is used to search and send back the requested file
 		                                    try {
-		                                    	//Ip may be a problem. 'localhost' should also work just fine if this doens't work
-		                                    	foreignSocket = new Socket(foreignIP, foreignPortListener);
+		                                    	//Ip may be a problem. 'localhost' should also work just fine if this doesn't work
+		                                    	foreignSocket = new Socket("localhost", foreignPort);
 		                                    	PrintWriter foreignOutput = new PrintWriter(foreignSocket.getOutputStream(), true);
 		                                        BufferedReader foreignInput = new BufferedReader(new InputStreamReader(foreignSocket.getInputStream()));
 		                                    	//Begin transfer process once the other peers listening port passes us to our own thread
+		                                        foreignOutput.println(username + " has connected to your client to download " + selectedItem);
+		                                        
 		                                        
 		                                        
 		                                        
@@ -328,9 +338,6 @@ public class Client extends JFrame
 		                                    	chatBox.append("Error: Unable to communicate with " + foreignUsername + "\n");
 			                                    System.out.println("Error: Unable to communicate with " + foreignUsername);
 		                                    }
-		                                    
-		                                    
-		                                    
 										}
 										else
 										{
@@ -386,4 +393,41 @@ public class Client extends JFrame
         return false;
     }
 
+}
+
+/*
+ * Handles incoming peers asking for a particular download
+ */
+class ForeignPeerThread implements Runnable
+{
+	Socket foreignPeerSocket;
+	String directory;
+	List availableFiles;
+	
+	ObjectOutputStream objectOutput;
+	PrintWriter output;
+	BufferedReader input;
+	
+	public ForeignPeerThread(Socket foreignPeerSocket, String directory, List availableFiles)
+    {
+		this.foreignPeerSocket = foreignPeerSocket;
+		this.directory = directory;
+		this.availableFiles = availableFiles;
+    }
+	
+	public void run() {
+		try {
+			objectOutput = new ObjectOutputStream(foreignPeerSocket.getOutputStream());
+			output = new PrintWriter(foreignPeerSocket.getOutputStream(), true);
+            input = new BufferedReader(new InputStreamReader(foreignPeerSocket.getInputStream()));
+			
+			
+			System.out.println(input.readLine().toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
 }

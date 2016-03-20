@@ -230,9 +230,12 @@ public class Client extends JFrame
                 chatBox.append("Foreign peer detected. Creating new thread to handle download...\n");
     			//Pass connection to a new thread to transfer the requested file
                 //The thread method still needs to be made, so nothing will happen right now.
-    			ForeignPeerThread cT = new ForeignPeerThread(foreignSocket, directory, availableFiles);
-    			new Thread(cT).start();
-    			
+                System.out.println("Connecting foreign peer on port " + foreignSocket.getPort());
+                if(sSocket.getLocalPort() != foreignPortListener)
+                {
+                	ForeignPeerThread cT = new ForeignPeerThread(foreignSocket, directory, availableFiles);
+    				new Thread(cT).start();
+                }
             }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -320,7 +323,7 @@ public class Client extends JFrame
 		                                    //Once connected, a thread is used to search and send back the requested file
 		                                    try {
 		                                    	//Ip may be a problem. 'localhost' should also work just fine if this doesn't work
-		                                    	foreignSocket = new Socket("localhost", foreignPortListener);
+		                                    	foreignSocket = new Socket("localhost", foreignPort);
 		                                    	PrintWriter foreignOutput = new PrintWriter(foreignSocket.getOutputStream(), true);
 		                                        BufferedReader foreignInput = new BufferedReader(new InputStreamReader(foreignSocket.getInputStream()));
 		                                    	//Begin transfer process once the other peers listening port passes us to our own thread
