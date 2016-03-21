@@ -83,6 +83,10 @@ public class Server extends JFrame
                 	chatBox.append(clientList.get(i).threadSocket.getRemoteSocketAddress().toString() + "\n");
                 }
                 */
+                
+                
+                
+                
             }
         }
         catch(IOException exception)
