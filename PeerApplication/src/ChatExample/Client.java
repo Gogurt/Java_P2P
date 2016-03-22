@@ -318,23 +318,17 @@ public class Client extends JFrame
                                      */
                                     try {
 										String result = input.readLine().toString();
-	                                    	System.out.println("This is the output from 'result': "  + result); // e.g. testText.txt
-	                                    	System.out.println("This is the output from 'selectedItem': " + selectedItem);  // e.g. 
-	                                    //if(result.equals("PEER_FOUND"))
-										if(result.equals(selectedItem.toString()))
+	                                    System.out.println(result);
+
+	                                    if(result.equals("PEER_FOUND"))
+										//if(result.equals(selectedItem))
 										{
 											chatBox.append("Found peer with requested file! beginning connection process...\n");
 		                                    System.out.println("Found peer with requested file! beginning connection process...");
 		                                    //Grab ip information about other peer
-		                                    String foreignIP = input.readLine();
-		                                    	System.out.println("In between foreign IP and UserName");
-		                                    String foreignUsername = input.readLine();
-		                                    	System.out.println("After between foreign IP and UserName");
-
-		                                    	String foreignPortMess = input.readLine();
-		                                    	String foreignPortSubString = foreignPortMess.substring(11, 15);
-		                                    int foreignPort = Integer.valueOf(foreignPortSubString);
-		                                    System.out.println("This is the result from subString for 'foreignPort': " + foreignPort);
+		                                    String foreignIP = input.readLine().toString();
+		                                    String foreignUsername = input.readLine().toString();
+		                                    int foreignPort = Integer.parseInt(input.readLine());
 		                                    
 		                                    chatBox.append("Your requested file is from " + foreignUsername + " at " + foreignIP + "\n");
 		                                    System.out.println("Your requested file is from " + foreignUsername + " at " + foreignIP);
@@ -344,8 +338,7 @@ public class Client extends JFrame
 		                                    try {
 		                                    	//IP may be a problem. 'localhost' should also work just fine if this doesn't work
 		                                    	foreignSocket = new Socket("localhost", foreignPort);
-		                                    	//InputStreamReader isr = new InputStreamReader( foreignSocket.getInputStream());
-		                                    	InputStreamReader isr = new InputStreamReader( null, directory + "\\" + selectedItem);
+		                                    	InputStreamReader isr = new InputStreamReader(foreignSocket.getInputStream());
 		                                    	
 		                                    	//BufferedReader inputBuffer = new BufferedReader(input);
 		                                    	FileOutputStream fileOutput = new FileOutputStream(directory + "\\" + selectedItem);
