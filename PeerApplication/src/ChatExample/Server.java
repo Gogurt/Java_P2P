@@ -212,9 +212,7 @@ public class Server extends JFrame
 	                    			output.println(peerList.get(i).ip);
 	                    			output.println(peerList.get(i).username);
 	                    			output.println(peerList.get(i).port);
-	                    			//Inform the foreign peer that the requesting peer wishes to download their file
-	                    			
-	                    			
+
 	                    		}
 	                    		else
 	                    		{
@@ -256,7 +254,7 @@ public class Server extends JFrame
             }
         }
         
-        
+        //appends the currently synced file information and owners on the server log
         public void printPeerItems()
         {
         	chatBox.append("List of available files:\n");
