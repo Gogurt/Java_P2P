@@ -356,12 +356,14 @@ public class Client extends JFrame
 		                                        InputStream in = socket.getInputStream();
 		                                        System.out.println("Buffer: " + buffer);
 		                                        while((count = in.read(buffer)) >= 0){
-		                                        	fos.write(buffer, 0, count);
+		                                            fos.write(buffer);
 		                                        }
 		                                        fos.close();
 		                                        System.out.println("File " + fileOutputDir + " downloaded");
 		                                    	
-		                                        if (foreignSocket != null) foreignSocket.close();	                                        
+		                                        if (foreignSocket != null) foreignSocket.close();
+		                                        
+		                                        
 		                                    }
 		                                    catch(IOException ioe)
 		                                    {

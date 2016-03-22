@@ -361,7 +361,9 @@ public class Client extends JFrame
 		                                        fos.close();
 		                                        System.out.println("File " + fileOutputDir + " downloaded");
 		                                    	
-		                                        if (foreignSocket != null) foreignSocket.close();	                                        
+		                                        if (foreignSocket != null) foreignSocket.close();
+		                                        
+		                                        
 		                                    }
 		                                    catch(IOException ioe)
 		                                    {

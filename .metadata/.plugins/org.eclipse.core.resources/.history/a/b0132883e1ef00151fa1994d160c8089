@@ -349,19 +349,36 @@ public class Client extends JFrame
 		                                        String fileOutputDir = directory + "/" + selectedItem;
 		                                    	
 		                                    	//Recieve file from foreign peer
-		                                        FileOutputStream fos = new FileOutputStream(fileOutputDir);
-		                                        BufferedOutputStream out = new BufferedOutputStream(fos);
-		                                        byte[] buffer = new byte[1024];
-		                                        int count;
-		                                        InputStream in = socket.getInputStream();
-		                                        System.out.println("Buffer: " + buffer);
-		                                        while((count = in.read(buffer)) >= 0){
-		                                        	fos.write(buffer, 0, count);
-		                                        }
-		                                        fos.close();
-		                                        System.out.println("File " + fileOutputDir + " downloaded");
+		                                        int bytesRead;
+		                                        int current = 0;
+		                                        FileOutputStream fos = null;
+		                                        BufferedOutputStream bos = null;
+		                                        
+		                                        byte [] mybytearray  = new byte [FILE_SIZE];
+		                                        InputStream is = foreignSocket.getInputStream();
+		                                        fos = new FileOutputStream(fileOutputDir);
+		                                        bos = new BufferedOutputStream(fos);
+		                                        
+		                                        bytesRead = is.read(mybytearray,0,mybytearray.length);
+		                                        
+		                                        current = bytesRead;
+		                                        
+		                                        
+		                                        	System.out.println("Reading " + current + " bytes...");
+		                                        	bytesRead = is.read(mybytearray, current, (mybytearray.length-current));
+		                                        	if(bytesRead >= 0) current += bytesRead;
+		                                        
+
+	                                        	bos.write(mybytearray, 0 , current);
+	                                        	System.out.println(mybytearray);
+		                                        bos.flush();
+		                                        System.out.println("File " + fileOutputDir + " downloaded (" + current + " bytes read)");
 		                                    	
-		                                        if (foreignSocket != null) foreignSocket.close();	                                        
+		                                        if (fos != null) fos.close();
+		                                        if (bos != null) bos.close();
+		                                        if (foreignSocket != null) foreignSocket.close();
+		                                        
+		                                        
 		                                    }
 		                                    catch(IOException ioe)
 		                                    {
@@ -471,13 +488,11 @@ class ForeignPeerThread implements Runnable
 				        int count;
 				        byte[] buffer = new byte[1024];
 
-				        System.out.println("Sending " + fileToSend);
 				        OutputStream out = foreignPeerSocket.getOutputStream();
 				        BufferedInputStream in = new BufferedInputStream(new FileInputStream(myFile));
-				        while ((count = in.read(buffer)) >= 0) {
+				        while ((count = in.read(buffer)) > 0) {
 				             out.write(buffer, 0, count);
 				             out.flush();
-				        }
 				        System.out.println("Done.");
 				        
 				   
